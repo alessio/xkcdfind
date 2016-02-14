@@ -30,44 +30,47 @@ type Index struct {
 	Missing []int
 }
 
-var ComicsIndex = Index{Latest: 0}
-
-func LoadIndex(filename string) error {
-	fp, err := os.OpenFile(filename, os.O_CREATE|os.O_RDONLY, 0644)
-	defer fp.Close()
-	if err != nil {
-		return err
-	}
-
-	err = json.NewDecoder(fp).Decode(&ComicsIndex)
-	if err != nil {
-		fmt.Fprintf(os.Stderr,
-			"The index is corrupted, will be refreshed -- %s\n", err)
-		fp.Close()
-		err = UpdateIndex(filename)
-	}
-
-	return err
+func (ind *Index) String() string {
+	return fmt.Sprintf("comics:%d  latest#:%d  missing:%d",
+		len(ind.Items), ind.Latest, len(ind.Missing))
 }
 
-func UpdateIndex(filename string) error {
+//var ComicsIndex = Index{Latest: 0}
+
+func LoadIndex(filename string) (*Index, error) {
+	var ind Index
+
+	fp, err := os.OpenFile(filename, os.O_RDONLY, 0644)
+	defer fp.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.NewDecoder(fp).Decode(&ind)
+	if err != nil {
+		return nil, err
+	}
+	return &ind, nil
+}
+
+func (ind *Index) UpdateIndex(filename string) error {
 	latestRemoteComic, err := FetchComic(0) // Fetch latest
 	if err != nil {
 		return fmt.Errorf(
 			"couldn't retrieve remote's latest comic -- %s", err)
 	}
-	if ComicsIndex.Latest == 0 {
-		ComicsIndex.Items = make(map[string]Comic)
+	if ind.Latest == 0 {
+		ind.Items = make(map[string]Comic)
 	}
 
-	for i := ComicsIndex.Latest + 1; i <= latestRemoteComic.Num; i++ {
+	for i := ind.Latest + 1; i <= latestRemoteComic.Num; i++ {
 		if comic, err := FetchComic(i); err != nil {
 			fmt.Fprintf(os.Stderr,
 				"couldn't retrieve comic -- %s\n", err)
-			ComicsIndex.Missing = append(ComicsIndex.Missing, i)
+			ind.Missing = append(ind.Missing, i)
 		} else {
-			ComicsIndex.Items[strconv.Itoa(i)] = *comic
-			ComicsIndex.Latest = i
+			ind.Items[strconv.Itoa(i)] = *comic
+			ind.Latest = i
 		}
 	}
 
@@ -77,10 +80,10 @@ func UpdateIndex(filename string) error {
 		return fmt.Errorf("couldn't open '%s' -- %s", filename, err)
 	}
 
-	return json.NewEncoder(fp).Encode(&ComicsIndex)
+	return json.NewEncoder(fp).Encode(ind)
 }
 
-func RegexSearchComic(terms []string) []Comic {
+func (ind *Index) RegexSearchComic(terms []string) []Comic {
 	var (
 		results []Comic
 		rs      []*regexp.Regexp
@@ -93,7 +96,7 @@ func RegexSearchComic(terms []string) []Comic {
 			fmt.Fprintf(os.Stderr, "Invalid regex: %s\n", expr)
 		}
 	}
-	for _, comic := range ComicsIndex.Items {
+	for _, comic := range ind.Items {
 		for _, r := range rs {
 			if r.FindStringIndex(comic.Alt) != nil ||
 				r.FindStringIndex(comic.Title) != nil ||

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"text/template"
@@ -23,22 +24,49 @@ func printResults(results []xkcd.Comic) {
 	}
 }
 
+func mustLoadIndex(filename string) *xkcd.Index {
+	index, err := xkcd.LoadIndex(filename)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(2)
+	}
+	return index
+}
+
 func main() {
 	var (
-		indexFilename string
-		update        bool
+		filename string
+		index    *xkcd.Index
+		update   bool
 	)
-	flag.StringVar(&indexFilename, "index", DefaultIndexFilename, "Index file (default: 'index.json')")
+	flag.StringVar(&filename, "index", DefaultIndexFilename, "Index file")
 	flag.BoolVar(&update, "update", false, "Force the update of the index")
 	flag.Parse()
-	if err := xkcd.LoadIndex(indexFilename); err != nil {
-		log.Fatal(err)
+
+	if !update && flag.NArg() == 0 {
+		index = mustLoadIndex(filename)
+		fmt.Fprintf(os.Stderr, "%s\n", index)
+		os.Exit(0)
 	}
 	if update {
-		xkcd.UpdateIndex(indexFilename)
+		index, err := xkcd.LoadIndex(filename)
+		if err != nil {
+			if os.IsNotExist(err) {
+				index = new(xkcd.Index)
+			} else {
+				fmt.Fprintf(os.Stderr, "%s is corrupted -- %s\n", filename, err)
+				os.Exit(2)
+			}
+		}
+		if err := index.UpdateIndex(filename); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(3)
+		}
+		fmt.Fprintf(os.Stderr, "%s\n", index)
 	}
-	if len(flag.Args()) > 0 {
-		results := xkcd.RegexSearchComic(flag.Args())
+	if flag.NArg() > 0 {
+		index = mustLoadIndex(filename)
+		results := index.RegexSearchComic(flag.Args())
 		printResults(results)
 	}
 }

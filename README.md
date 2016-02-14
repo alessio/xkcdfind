@@ -1,14 +1,14 @@
-# xkcdfinder
+# xkcdfind
 Xkcd search tool.
 
 # Installation
 
 ```bash
-$ go get github.com/alessio/xkcdfinder
+$ go get github.com/alessio/xkcdfind
 ```
 
 # Usage
 
 ```bash
-$ xkcdfinder --help
+$ xkcdfind --help
 ```

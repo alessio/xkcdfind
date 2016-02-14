@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/alessio/xkcdfinder/xkcd"
+	"github.com/alessio/xkcdfind/xkcd"
 )
 
 func printResults(results []xkcd.Comic) {

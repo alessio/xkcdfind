@@ -11,9 +11,8 @@ import (
 )
 
 const (
-	XkcdURL              string = "http://xkcd.com/"
-	RemoteJSONFilename   string = "info.0.json"
-	DefaultIndexFilename string = "index.json"
+	XkcdURL            string = "http://xkcd.com/"
+	RemoteJSONFilename string = "info.0.json"
 )
 
 type Comic struct {
@@ -34,9 +33,6 @@ type Index struct {
 var ComicsIndex = Index{Latest: 0}
 
 func LoadIndex(filename string) error {
-	if len(filename) == 0 {
-		filename = DefaultIndexFilename
-	}
 	fp, err := os.OpenFile(filename, os.O_CREATE|os.O_RDONLY, 0644)
 	defer fp.Close()
 	if err != nil {
@@ -75,9 +71,6 @@ func UpdateIndex(filename string) error {
 		}
 	}
 
-	if len(filename) == 0 {
-		filename = DefaultIndexFilename
-	}
 	fp, err := os.OpenFile(filename, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0644)
 	defer fp.Close()
 	if err != nil {

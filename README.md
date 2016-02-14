@@ -10,6 +10,11 @@ $ go get github.com/alessio/xkcdfind
 
 # Usage
 
-```bash
-$ xkcdfind --help
+```console
+alessio@bizet:~$ xkcdfind -h
+Usage of xkcdfind:
+  -index string
+    	Index file (default: 'index.json')
+  -update
+    	Force the update of the index
 ```

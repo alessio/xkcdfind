@@ -1,4 +1,4 @@
-# xkcdfinder
+# xkcdfinder [![Travis-CI Status](https://api.travis-ci.org/alessio/xkcdfinder.png?branch=master)](http://travis-ci.org/#!/alessio/xkcdfinder)
 Xkcd search tool.
 
 # Installation

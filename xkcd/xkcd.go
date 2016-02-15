@@ -3,6 +3,7 @@ package xkcd
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"regexp"
@@ -55,7 +56,7 @@ func (ind *Index) UpdateIndex(filename string) error {
 	latestRemoteComic, err := FetchComic(0) // Fetch latest
 	if err != nil {
 		return fmt.Errorf(
-			"couldn't retrieve remote's latest comic -- %s", err)
+			"couldn't retrieve remote's latest comic: %s", err)
 	}
 	if ind.Latest == 0 {
 		ind.Items = make(map[string]Comic)
@@ -63,8 +64,7 @@ func (ind *Index) UpdateIndex(filename string) error {
 
 	for i := ind.Latest + 1; i <= latestRemoteComic.Num; i++ {
 		if comic, err := FetchComic(i); err != nil {
-			fmt.Fprintf(os.Stderr,
-				"couldn't retrieve comic -- %s\n", err)
+			log.Printf("couldn't retrieve comic: %s", err)
 			ind.Missing = append(ind.Missing, i)
 		} else {
 			ind.Items[strconv.Itoa(i)] = *comic
@@ -91,7 +91,7 @@ func (ind *Index) RegexSearchComic(terms []string) []Comic {
 		if r, err := regexp.Compile(expr); err == nil {
 			rs = append(rs, r)
 		} else {
-			fmt.Fprintf(os.Stderr, "Invalid regex: %s\n", expr)
+			log.Printf("Invalid regex '%s': %s", expr, err)
 		}
 	}
 	for _, comic := range ind.Items {
@@ -120,7 +120,7 @@ func FetchComic(comicID int) (*Comic, error) {
 		url = strings.Join([]string{XkcdURL, strconv.Itoa(comicID), "/", RemoteJSONFilename}, "")
 	}
 
-	fmt.Fprintf(os.Stderr, "Fetching remote index: %s\n", url)
+	log.Printf("Fetching %s", url)
 	resp, err := http.Get(url)
 	defer resp.Body.Close()
 	if err != nil {

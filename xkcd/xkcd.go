@@ -31,7 +31,7 @@ type Index struct {
 }
 
 func (ind *Index) String() string {
-	return fmt.Sprintf("comics:%d  latest#:%d  missing:%d",
+	return fmt.Sprintf("comics:%d  latest:#%d  missing:%d",
 		len(ind.Items), ind.Latest, len(ind.Missing))
 }
 

@@ -35,8 +35,6 @@ func (ind *Index) String() string {
 		len(ind.Items), ind.Latest, len(ind.Missing))
 }
 
-//var ComicsIndex = Index{Latest: 0}
-
 func LoadIndex(filename string) (*Index, error) {
 	var ind Index
 
